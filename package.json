@@ -1,0 +1,8 @@
+{
+  "name": "employee-payroll-management-system",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
