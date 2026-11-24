@@ -108,37 +108,39 @@ function getActiveNavClass(label) {
 function shell(content) {
     const page = Object.values(pages).find((item) => item.key === currentPage) || pages["index.html"];
     document.title = `${page.title} | ${setting.companyName}`;
-    app.innerHTML = `
-        <div class="app-shell">
-            <aside class="sidebar" id="sidebar">
-                <a class="brand" href="./index.html" data-nav>
-                    <span class="brand-mark">R</span>
-                    <span><strong>${escapeHTML(setting.companyName)}</strong><small>Employee Payroll System</small></span>
-                </a>
-                <nav class="sidebar-nav" aria-label="Main navigation">
-                    <p class="nav-caption">WORKSPACE</p>
-                    ${navigation.map(([label, href, iconName]) => `
-                        <a class="nav-link${getActiveNavClass([label, href])}" href="./${href}" data-nav>
-                            ${icon(iconName)}<span>${label}</span>
-                        </a>`).join("")}
-                </nav>
-                <div class="sidebar-footer"><span class="avatar">A</span><span><strong>Administrator</strong><small>Payroll Manager</small></span></div>
-            </aside>
-            <div class="main-content">
-                <header class="topbar">
-                    <div class="topbar-heading">
-                        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
-                        <div><h1>${page.title}</h1><p>${page.subtitle}</p></div>
-                    </div>
-                    <span class="topbar-date">${icon("fa-calendar")} ${new Intl.DateTimeFormat("en-PK", { dateStyle: "medium" }).format(new Date())}</span>
-                </header>
-                <main class="page-content">
-                    ${notice ? `<div class="notice ${noticeType}" role="status">${escapeHTML(notice)}</div>` : ""}
-                    ${content}
-                    <footer class="footer"><span>${escapeHTML(setting.companyName)}</span><span>University Project · In-memory data only</span></footer>
-                </main>
-            </div>
-        </div>`;
+    const staticShell = app.querySelector(".app-shell");
+    if (!staticShell) {
+        app.innerHTML = `
+            <div class="app-shell">
+                <aside class="sidebar" id="sidebar">
+                    <a class="brand" href="./index.html" data-nav><span class="brand-mark">R</span><span><strong>${escapeHTML(setting.companyName)}</strong><small>Employee Payroll System</small></span></a>
+                    <nav class="sidebar-nav" aria-label="Main navigation">
+                        <p class="nav-caption">WORKSPACE</p>
+                        ${navigation.map(([label, href, iconName]) => `<a class="nav-link${getActiveNavClass([label, href])}" href="./${href}" data-nav>${icon(iconName)}<span>${label}</span></a>`).join("")}
+                    </nav>
+                    <div class="sidebar-footer"><span class="avatar">A</span><span><strong>Administrator</strong><small>Payroll Manager</small></span></div>
+                </aside>
+                <div class="main-content">
+                    <header class="topbar"><div class="topbar-heading"><button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button><div><h1 id="topbar-title">${page.title}</h1><p id="topbar-subtitle">${page.subtitle}</p></div></div><span class="topbar-date" id="topbar-date">${icon("fa-calendar")} ${new Intl.DateTimeFormat("en-PK", { dateStyle: "medium" }).format(new Date())}</span></header>
+                    <main class="page-content"><div id="notice"></div><section id="page-content"></section><footer class="footer"><span id="footer-company">${escapeHTML(setting.companyName)}</span><span>University Project · In-memory data only</span></footer></main>
+                </div>
+            </div>`;
+    }
+
+    const staticPage = app.querySelector("#page-content[data-static-page]");
+    const brand = app.querySelector(".brand");
+    if (brand) brand.querySelector("strong").textContent = setting.companyName;
+    app.querySelectorAll(".nav-link").forEach((link) => {
+        const filename = link.getAttribute("href").replace("./", "");
+        link.classList.toggle("active", pages[filename]?.key === currentPage);
+    });
+    app.querySelector("#topbar-title").textContent = page.title;
+    app.querySelector("#topbar-subtitle").textContent = page.subtitle;
+    app.querySelector("#topbar-date").innerHTML = `${icon("fa-calendar")} ${new Intl.DateTimeFormat("en-PK", { dateStyle: "medium" }).format(new Date())}`;
+    app.querySelector("#notice").innerHTML = notice ? `<div class="notice ${noticeType}" role="status">${escapeHTML(notice)}</div>` : "";
+    app.querySelector("#page-content").setAttribute("aria-busy", "false");
+    if (!staticPage) app.querySelector("#page-content").innerHTML = content;
+    app.querySelector("#footer-company").textContent = setting.companyName;
 }
 
 function statCard(label, value, iconName, tone, helper = "") {
@@ -157,6 +159,23 @@ function renderDashboard() {
         return `<div class="department-row"><span>${escapeHTML(department)}</span><strong>${count} active</strong></div>`;
     }).join("");
     const recentEmployees = [...employees].slice(-5).reverse();
+    if (app.querySelector("#dashboard-stats")) {
+        app.querySelector("#dashboard-stats").innerHTML =
+            statCard("Total employees", employees.length, "fa-users", "blue", `${active.length} active employees`) +
+            statCard("Departments", getDepartments().length, "fa-building", "purple", "Across your organization") +
+            statCard("Present today", attendance.present, "fa-user-check", "green", `${attendance.absent} absent · ${attendance.onLeave} on leave`) +
+            statCard("Latest payroll", money(payrollTotal), "fa-wallet", "orange", latestPeriod ? formatPeriod(latestPeriod) : "Generate your first payroll");
+        app.querySelector("#attendance-summary-title").textContent = attendance.total ? `${paidDays}% of recorded employees are present` : "Mark attendance to see today's summary.";
+        app.querySelector("#dashboard-attendance").innerHTML =
+            `<div><span class="summary-dot present"></span><strong>${attendance.present}</strong><small>Present</small></div>` +
+            `<div><span class="summary-dot absent"></span><strong>${attendance.absent}</strong><small>Absent</small></div>` +
+            `<div><span class="summary-dot leave"></span><strong>${attendance.onLeave}</strong><small>On leave</small></div>`;
+        app.querySelector("#attendance-progress").style.width = `${paidDays}%`;
+        app.querySelector("#dashboard-departments").innerHTML = departmentRows || `<p class="empty-state">Add employees to see departments.</p>`;
+        app.querySelector("#recent-employees").innerHTML = employeeTable(recentEmployees, false);
+        shell("");
+        return;
+    }
     shell(`
         <section class="page-intro"><div><p class="eyebrow">OVERVIEW</p><h2>Welcome to your payroll workspace</h2><p>Manage employees, attendance, and salary records in one place.</p></div><a class="button button-primary" href="./employees.html" data-nav>${icon("fa-user-plus")} Add employee</a></section>
         <section class="stats-grid" aria-label="Dashboard statistics">
@@ -202,6 +221,22 @@ function employeeTable(records, showActions = true) {
 function renderEmployees() {
     const departments = getDepartments();
     const records = employeeManager.searchEmployees(employeeSearch, departmentFilter, statusFilter);
+    if (app.querySelector("#employee-table")) {
+        app.querySelector("#employee-stats").innerHTML =
+            statCard("All employees", employees.length, "fa-users", "blue") +
+            statCard("Active employees", employees.filter((employee) => employee.status === "Active").length, "fa-user-check", "green") +
+            statCard("Inactive employees", employees.filter((employee) => employee.status === "Inactive").length, "fa-user-slash", "orange");
+        app.querySelector("#department-options").innerHTML = departments.map((department) => `<option value="${escapeHTML(department)}"></option>`).join("");
+        app.querySelector("#employee-result-count").textContent = `${records.length} matching record${records.length === 1 ? "" : "s"}`;
+        app.querySelector("#employee-table").innerHTML = employeeTable(records);
+        const departmentFilterElement = app.querySelector("#department-filter");
+        departmentFilterElement.innerHTML = `<option value="">All departments</option>` + departments.map((department) =>
+            `<option value="${escapeHTML(department)}"${department === departmentFilter ? " selected" : ""}>${escapeHTML(department)}</option>`).join("");
+        app.querySelector("#status-filter").value = statusFilter;
+        app.querySelector("#employee-search").value = employeeSearch;
+        shell("");
+        return;
+    }
     shell(`
         <section class="page-intro"><div><p class="eyebrow">PEOPLE</p><h2>Employee directory</h2><p>Add, edit, search, and filter your employee records.</p></div><a class="button button-primary" href="#employee-form">+ Add employee</a></section>
         <section class="stats-grid stats-grid-three">
@@ -246,6 +281,20 @@ function renderAttendance() {
     const summary = attendanceManager.calculateAttendance(attendanceDate);
     const activeEmployees = employees.filter((employee) => employee.status === "Active");
     const records = attendanceManager.getAttendanceHistory(attendanceDate);
+    if (app.querySelector("#attendance-table")) {
+        app.querySelector("#attendance-stats").innerHTML =
+            statCard("Present", summary.present, "fa-user-check", "green") +
+            statCard("Absent", summary.absent, "fa-user-xmark", "orange") +
+            statCard("On leave", summary.onLeave, "fa-calendar-minus", "purple");
+        app.querySelector("#attendance-form [name='employeeId']").innerHTML = activeEmployees.map((employee) =>
+            `<option value="${employee.id}">${escapeHTML(employee.name)} · EMP-${String(employee.id).padStart(3, "0")}</option>`).join("");
+        app.querySelector("#attendance-form [name='date']").value = attendanceDate;
+        app.querySelector("#attendance-date").value = attendanceDate;
+        app.querySelector("#attendance-history-count").textContent = `${records.length} record${records.length === 1 ? "" : "s"} for ${attendanceDate}`;
+        app.querySelector("#attendance-table").innerHTML = attendanceTable(records);
+        shell("");
+        return;
+    }
     shell(`
         <section class="page-intro"><div><p class="eyebrow">DAILY RECORDS</p><h2>Attendance management</h2><p>Mark attendance and update a record for the same employee and date.</p></div></section>
         <section class="stats-grid stats-grid-three">
@@ -285,6 +334,19 @@ function renderPayroll() {
     const gross = records.reduce((total, record) => total + record.grossSalary, 0);
     const net = records.reduce((total, record) => total + record.netSalary, 0);
     const deductions = records.reduce((total, record) => total + record.deductions, 0);
+    if (app.querySelector("#payroll-table")) {
+        app.querySelector("#payroll-stats").innerHTML =
+            statCard("Gross payroll", money(gross), "fa-money-bill-wave", "blue") +
+            statCard("Total deductions", money(deductions), "fa-receipt", "orange", `${setting.deductionRate}% of basic salary`) +
+            statCard("Net payroll", money(net), "fa-wallet", "green");
+        app.querySelector("#payroll-form [name='period']").value = selectedPeriod;
+        app.querySelector("#payroll-history-title").textContent = `Showing ${formatPeriod(selectedPeriod)}`;
+        app.querySelector("#payroll-period").innerHTML = periodOptions.map((period) =>
+            `<option value="${escapeHTML(period)}"${period === selectedPeriod ? " selected" : ""}>${formatPeriod(period)}</option>`).join("");
+        app.querySelector("#payroll-table").innerHTML = payrollTable(records);
+        shell("");
+        return;
+    }
     shell(`
         <section class="page-intro"><div><p class="eyebrow">SALARY PROCESSING</p><h2>Monthly payroll</h2><p>Generate salaries automatically for all active employees.</p></div></section>
         <section class="stats-grid stats-grid-three">
@@ -315,6 +377,18 @@ function renderSlips() {
     const periods = getPeriods();
     const selectedPeriod = slipPeriod || periods[0] || currentPeriod();
     const records = payrollManager.getPayrollHistory(selectedPeriod);
+    if (app.querySelector("#salary-slips")) {
+        app.querySelector("#slip-period").innerHTML =
+            `<option value="${escapeHTML(currentPeriod())}"${selectedPeriod === currentPeriod() ? " selected" : ""}>${formatPeriod(currentPeriod())}</option>` +
+            periods.filter((period) => period !== currentPeriod()).map((period) =>
+                `<option value="${escapeHTML(period)}"${period === selectedPeriod ? " selected" : ""}>${formatPeriod(period)}</option>`).join("");
+        app.querySelector("#salary-slips").innerHTML = records.length
+            ? records.map((record) => salarySlip(record)).join("")
+            : `<div class="empty-state">No salary slips for this month. Generate payroll first.</div>`;
+        app.querySelector("#print-all-slips").hidden = !records.length;
+        shell("");
+        return;
+    }
     shell(`
         <section class="page-intro"><div><p class="eyebrow">EMPLOYEE DOCUMENTS</p><h2>Salary slips</h2><p>Print an individual salary statement or print all slips for this month.</p></div>${records.length ? `<button class="button button-secondary" type="button" data-action="print-all">${icon("fa-print")} Print all</button>` : ""}</section>
         <section class="card">
@@ -346,6 +420,24 @@ function renderReports() {
         const salaries = allPayroll.filter((record) => record.department === department);
         return `<tr><td>${escapeHTML(department)}</td><td>${people.length}</td><td>${salaries.length}</td><td>${money(salaries.reduce((sum, record) => sum + record.netSalary, 0))}</td></tr>`;
     }).join("");
+    if (app.querySelector("#report-stats")) {
+        app.querySelector("#report-stats").innerHTML =
+            statCard("Employees", employees.length, "fa-users", "blue", `${employees.filter((employee) => employee.status === "Active").length} active`) +
+            statCard("Attendance records", attendance.total, "fa-calendar-check", "purple", `${attendance.present} present · ${attendance.absent} absent`) +
+            statCard("Payroll records", allPayroll.length, "fa-file-invoice-dollar", "green", `${getPeriods().length} payroll periods`) +
+            statCard("Total net payroll", money(allPayroll.reduce((sum, record) => sum + record.netSalary, 0)), "fa-wallet", "orange", "All generated periods");
+        app.querySelector("#department-report").innerHTML = departmentNames.length
+            ? `<div class="table-wrap"><table><thead><tr><th>DEPARTMENT</th><th>EMPLOYEES</th><th>PAYROLL ENTRIES</th><th>NET PAYROLL</th></tr></thead><tbody>${departmentRows}</tbody></table></div>`
+            : `<div class="empty-state">Add employees to see the department report.</div>`;
+        app.querySelector("#monthly-report").innerHTML = getPeriods().length
+            ? `<div class="table-wrap"><table><thead><tr><th>PERIOD</th><th>EMPLOYEES PAID</th><th>GROSS TOTAL</th><th>DEDUCTIONS</th><th>NET TOTAL</th></tr></thead><tbody>${getPeriods().map((period) => {
+                const records = allPayroll.filter((record) => record.period === period);
+                return `<tr><td>${formatPeriod(period)}</td><td>${records.length}</td><td>${money(records.reduce((sum, record) => sum + record.grossSalary, 0))}</td><td>${money(records.reduce((sum, record) => sum + record.deductions, 0))}</td><td><strong>${money(records.reduce((sum, record) => sum + record.netSalary, 0))}</strong></td></tr>`;
+            }).join("")}</tbody></table></div>`
+            : `<div class="empty-state">Generate payroll to build a monthly report.</div>`;
+        shell("");
+        return;
+    }
     shell(`
         <section class="page-intro"><div><p class="eyebrow">BUSINESS SUMMARY</p><h2>Payroll reports</h2><p>Report totals are generated from the current in-memory records.</p></div><button class="button button-secondary" type="button" data-action="print-report">${icon("fa-print")} Print report</button></section>
         <section class="stats-grid">
@@ -369,6 +461,12 @@ function renderReports() {
 }
 
 function renderSettings() {
+    if (app.querySelector("#settings-form")) {
+        app.querySelector("#settings-form [name='companyName']").value = setting.companyName;
+        app.querySelector("#settings-form [name='deductionRate']").value = setting.deductionRate;
+        shell("");
+        return;
+    }
     shell(`
         <section class="page-intro"><div><p class="eyebrow">PREFERENCES</p><h2>Company settings</h2><p>These details are kept in the shared JavaScript module for this session.</p></div></section>
         <section class="card settings-card">
@@ -426,16 +524,31 @@ function resetEmployeeForm() {
     document.querySelector("#cancel-edit").classList.add("hidden");
 }
 
-function handleEmployeeSubmit(form) {
-    const data = Object.fromEntries(new FormData(form));
-    try {
+class EmployeeController {
+    constructor(manager) {
+        this.manager = manager;
+    }
+
+    save(form) {
+        const data = Object.fromEntries(new FormData(form));
         if (data.id) {
-            employeeManager.updateEmployee(data.id, data);
-            showNotice("Employee details updated.");
-        } else {
-            employeeManager.addEmployee(data);
-            showNotice("Employee added successfully.");
+            this.manager.updateEmployee(data.id, data);
+            return "Employee details updated.";
         }
+        this.manager.addEmployee(data);
+        return "Employee added successfully.";
+    }
+
+    delete(id) {
+        return this.manager.deleteEmployee(id);
+    }
+}
+
+const employeeController = new EmployeeController(employeeManager);
+
+function handleEmployeeSubmit(form) {
+    try {
+        showNotice(employeeController.save(form));
     } catch (error) {
         showNotice(error.message, "error");
     }
@@ -443,11 +556,7 @@ function handleEmployeeSubmit(form) {
 
 function handleClick(event) {
     const link = event.target.closest("a[data-nav]");
-    if (link && link.origin === window.location.origin && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
-        event.preventDefault();
-        navigate(new URL(link.href));
-        return;
-    }
+    if (link) return;
 
     const button = event.target.closest("[data-action]");
     if (!button) return;
@@ -468,7 +577,7 @@ function handleClick(event) {
         case "delete-employee": {
             const employee = employees.find((item) => item.id === id);
             if (!employee || !window.confirm(`Delete ${employee.name}?`)) return;
-            employeeManager.deleteEmployee(id);
+            employeeController.delete(id);
             render();
             showNotice("Employee deleted.");
             break;

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-PK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,22 @@
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <div id="app"><p class="loading">Loading reports...</p></div>
+    <main id="app" aria-live="polite">
+        <div class="app-shell">
+            <aside class="sidebar" id="sidebar"><a class="brand" href="./index.html" data-nav><span class="brand-mark">R</span><span><strong>Rajby Textiles</strong><small>Employee Payroll System</small></span></a>
+                <nav class="sidebar-nav" aria-label="Main navigation"><p class="nav-caption">WORKSPACE</p><a class="nav-link" href="./index.html" data-nav><span class="icon">⌂</span><span>Dashboard</span></a><a class="nav-link" href="./employees.html" data-nav><span class="icon">♙</span><span>Employees</span></a><a class="nav-link" href="./attendance.html" data-nav><span class="icon">✓</span><span>Attendance</span></a><a class="nav-link" href="./payroll.html" data-nav><span class="icon">₨</span><span>Payroll</span></a><a class="nav-link" href="./salary-slips.html" data-nav><span class="icon">▤</span><span>Salary Slips</span></a><a class="nav-link active" href="./reports.html" data-nav><span class="icon">↗</span><span>Reports</span></a><a class="nav-link" href="./settings.html" data-nav><span class="icon">⚙</span><span>Settings</span></a></nav>
+                <div class="sidebar-footer"><span class="avatar">A</span><span><strong>Administrator</strong><small>Payroll Manager</small></span></div>
+            </aside>
+            <div class="main-content"><header class="topbar"><div class="topbar-heading"><button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button><div><h1 id="topbar-title">Reports</h1><p id="topbar-subtitle">Summaries generated from your records.</p></div></div><span class="topbar-date" id="topbar-date">▦</span></header>
+                <main class="page-content"><div id="notice"></div><section id="page-content" data-static-page>
+                    <section class="page-intro"><div><p class="eyebrow">BUSINESS SUMMARY</p><h2>Payroll reports</h2><p>Report totals are generated from the current in-memory records.</p></div><button class="button button-secondary" type="button" data-action="print-report">⎙ Print report</button></section>
+                    <section class="stats-grid" id="report-stats"></section>
+                    <section class="card"><div class="card-heading"><div><h3>Department breakdown</h3><p>Employee count and generated net payroll by department</p></div></div><div id="department-report"></div></section>
+                    <section class="card"><div class="card-heading"><div><h3>Payroll by month</h3><p>Total net salary generated for each month</p></div></div><div id="monthly-report"></div></section>
+                </section><footer class="footer"><span id="footer-company">Rajby Textiles</span><span>University Project · In-memory data only</span></footer></main>
+            </div>
+        </div>
+    </main>
     <script type="module" src="./js/app.js"></script>
 </body>
 </html>

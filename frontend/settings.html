@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-PK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,23 @@
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <div id="app"><p class="loading">Loading settings...</p></div>
+    <main id="app" aria-live="polite">
+        <div class="app-shell">
+            <aside class="sidebar" id="sidebar"><a class="brand" href="./index.html" data-nav><span class="brand-mark">R</span><span><strong>Rajby Textiles</strong><small>Employee Payroll System</small></span></a>
+                <nav class="sidebar-nav" aria-label="Main navigation"><p class="nav-caption">WORKSPACE</p><a class="nav-link" href="./index.html" data-nav><span class="icon">⌂</span><span>Dashboard</span></a><a class="nav-link" href="./employees.html" data-nav><span class="icon">♙</span><span>Employees</span></a><a class="nav-link" href="./attendance.html" data-nav><span class="icon">✓</span><span>Attendance</span></a><a class="nav-link" href="./payroll.html" data-nav><span class="icon">₨</span><span>Payroll</span></a><a class="nav-link" href="./salary-slips.html" data-nav><span class="icon">▤</span><span>Salary Slips</span></a><a class="nav-link" href="./reports.html" data-nav><span class="icon">↗</span><span>Reports</span></a><a class="nav-link active" href="./settings.html" data-nav><span class="icon">⚙</span><span>Settings</span></a></nav>
+                <div class="sidebar-footer"><span class="avatar">A</span><span><strong>Administrator</strong><small>Payroll Manager</small></span></div>
+            </aside>
+            <div class="main-content"><header class="topbar"><div class="topbar-heading"><button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button><div><h1 id="topbar-title">Settings</h1><p id="topbar-subtitle">Update company payroll preferences.</p></div></div><span class="topbar-date" id="topbar-date">▦</span></header>
+                <main class="page-content"><div id="notice"></div><section id="page-content" data-static-page>
+                    <section class="page-intro"><div><p class="eyebrow">PREFERENCES</p><h2>Company settings</h2><p>These details are kept in the shared JavaScript module for this session.</p></div></section>
+                    <section class="card settings-card"><div class="card-heading"><div><h3>Payroll preferences</h3><p>Salary amounts throughout the application are shown in Pakistani Rupees (PKR).</p></div></div>
+                        <form id="settings-form" class="settings-form"><label>Company name<input name="companyName" maxlength="80" required></label><label>Currency<input value="PKR · Pakistani Rupee" disabled></label><label>Deduction rate (% of basic salary)<input name="deductionRate" type="number" min="0" max="100" step="0.5" required></label><button class="button button-primary" type="submit">Save settings</button></form>
+                        <div class="info-note"><span class="icon">i</span><p>No browser storage, API, database, or backend is used. Sample data returns when the page is refreshed or reopened.</p></div>
+                    </section>
+                </section><footer class="footer"><span id="footer-company">Rajby Textiles</span><span>University Project · In-memory data only</span></footer></main>
+            </div>
+        </div>
+    </main>
     <script type="module" src="./js/app.js"></script>
 </body>
 </html>

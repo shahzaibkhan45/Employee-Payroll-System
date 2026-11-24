@@ -1,14 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-PK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#111827">
+    <meta name="theme-color" content="#172238">
     <title>Employees</title>
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <div id="app"><p class="loading">Loading employee records...</p></div>
+    <main id="app" aria-live="polite">
+        <div class="app-shell">
+            <aside class="sidebar" id="sidebar">
+                <a class="brand" href="./index.html" data-nav><span class="brand-mark">R</span><span><strong>Rajby Textiles</strong><small>Employee Payroll System</small></span></a>
+                <nav class="sidebar-nav" aria-label="Main navigation">
+                    <p class="nav-caption">WORKSPACE</p>
+                    <a class="nav-link" href="./index.html" data-nav><span class="icon">⌂</span><span>Dashboard</span></a>
+                    <a class="nav-link active" href="./employees.html" data-nav><span class="icon">♙</span><span>Employees</span></a>
+                    <a class="nav-link" href="./attendance.html" data-nav><span class="icon">✓</span><span>Attendance</span></a>
+                    <a class="nav-link" href="./payroll.html" data-nav><span class="icon">₨</span><span>Payroll</span></a>
+                    <a class="nav-link" href="./salary-slips.html" data-nav><span class="icon">▤</span><span>Salary Slips</span></a>
+                    <a class="nav-link" href="./reports.html" data-nav><span class="icon">↗</span><span>Reports</span></a>
+                    <a class="nav-link" href="./settings.html" data-nav><span class="icon">⚙</span><span>Settings</span></a>
+                </nav>
+                <div class="sidebar-footer"><span class="avatar">A</span><span><strong>Administrator</strong><small>Payroll Manager</small></span></div>
+            </aside>
+            <div class="main-content">
+                <header class="topbar"><div class="topbar-heading"><button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button><div><h1 id="topbar-title">Employees</h1><p id="topbar-subtitle">Add, search, and manage employee records.</p></div></div><span class="topbar-date" id="topbar-date">▦</span></header>
+                <main class="page-content">
+                    <div id="notice"></div>
+                    <section id="page-content" data-static-page>
+                        <section class="page-intro"><div><p class="eyebrow">PEOPLE</p><h2>Employee directory</h2><p>Add, edit, search, and filter your employee records.</p></div><a class="button button-primary" href="#employee-form">+ Add employee</a></section>
+                        <section class="stats-grid stats-grid-three" id="employee-stats"></section>
+                        <section class="card" id="employee-form">
+                            <div class="card-heading"><div><h3 id="employee-form-title">Add an employee</h3><p>Employee records remain in memory until you refresh the page.</p></div></div>
+                            <form id="employee-form-element" class="form-grid">
+                                <input type="hidden" name="id">
+                                <label>Full name<input name="name" required maxlength="80"></label>
+                                <label>Department<input name="department" required maxlength="60" list="department-options"></label>
+                                <datalist id="department-options"></datalist>
+                                <label>Designation<input name="designation" required maxlength="60"></label>
+                                <label>Basic salary (PKR)<input name="basicSalary" required type="number" min="1" step="1"></label>
+                                <label>Phone<input name="phone" type="tel" maxlength="24"></label>
+                                <label>Email<input name="email" type="email" maxlength="100"></label>
+                                <label>Status<select name="status"><option>Active</option><option>Inactive</option></select></label>
+                                <div class="form-actions"><button class="button button-primary" type="submit">Save employee</button><button class="button button-secondary hidden" id="cancel-edit" type="button">Cancel edit</button></div>
+                            </form>
+                        </section>
+                        <section class="card">
+                            <div class="card-heading"><div><h3>All employees</h3><p id="employee-result-count"></p></div></div>
+                            <div class="toolbar">
+                                <label class="search-box"><input id="employee-search" type="search" placeholder="Search name, ID, or contact" aria-label="Search employees"></label>
+                                <select id="department-filter" aria-label="Filter by department"><option value="">All departments</option></select>
+                                <select id="status-filter" aria-label="Filter by status"><option value="">All statuses</option><option>Active</option><option>Inactive</option></select>
+                            </div>
+                            <div id="employee-table"></div>
+                        </section>
+                    </section>
+                    <footer class="footer"><span id="footer-company">Rajby Textiles</span><span>University Project · In-memory data only</span></footer>
+                </main>
+            </div>
+        </div>
+    </main>
     <script type="module" src="./js/app.js"></script>
 </body>
 </html>
